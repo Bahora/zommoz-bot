@@ -25,8 +25,12 @@ def indlaes_data():
         return json.load(f)
 
 def gem_data(data):
+    # Sikrer at mappen eksisterer
+    os.makedirs(os.path.dirname(DATAFIL), exist_ok=True)
+    
     with open(DATAFIL, "w") as f:
         json.dump(data, f, indent=2)
+
 
 class ZommozBot(commands.Cog):
     def __init__(self, bot):
