@@ -46,10 +46,7 @@ spec_til_rolle = {
 class ZommozBot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.db = Database()
-
-    async def cog_load(self):
-        await self.db.connect()
+        self.db = bot.db
 
     async def hent_data_fra_rio(self, rio_link):
         match = re.search(r"raider\.io/characters/(\w+)/([^/]+)/([^/?#]+)", rio_link)
@@ -94,7 +91,7 @@ class ZommozBot(commands.Cog):
                 pass
 
         titel = titel or f"Mythic List ({listename})"
-        besked = await kanal.send(f"**{titel}**_Opsætning klaret..._\n\n\u200b\n\u200b")
+        besked = await kanal.send(f"**{titel}**\n\n_Opsætning klaret..._\n\n\u200b\n\u200b")
         await self.db.opret_liste(guild_id, listename, titel, besked.id, ctx.author.id)
         await ctx.send(f"✅ Listen **{listename}** er nu klar.")
         try:
@@ -140,12 +137,12 @@ class ZommozBot(commands.Cog):
 
                 try:
                     reaction, _ = await self.bot.wait_for("reaction_add", timeout=30.0, check=check)
+                    await prompt.delete()  # 👈 slet altid prompten uanset hvad
                     if str(reaction.emoji) == "❌":
                         await ctx.send("❌ Tilmelding annulleret.")
                         return
-                    else:
-                        await prompt.delete()
                 except asyncio.TimeoutError:
+                    await prompt.delete()
                     await ctx.send("⏰ Tilmelding afbrudt (ingen bekræftelse modtaget).")
                     return
 
@@ -224,13 +221,13 @@ class ZommozBot(commands.Cog):
             tekst = f"**{row['charname']}** - {row['spec']} {row['class']} - {row['ilvl']} ilvl - [Raider.IO](<{row['rio']}>)"
             grupper[row["rolle"]].append(tekst)
 
-        content = f"**{ldata.get('titel', listename)}**"
+        content = f"**{ldata.get('titel', listename)}**\n\n"
         if grupper["tank"]:
-            content += "**🛡️ TANKS**" + "\n".join(grupper["tank"]) + "\n"
+            content += "**🛡️ TANKS**\n" + "\n".join(grupper["tank"]) + "\n"
         if grupper["healer"]:
-            content += "\n**💚 HEALERS**" + "\n".join(grupper["healer"]) + "\n"
+            content += "\n**💚 HEALERS**\n" + "\n".join(grupper["healer"]) + "\n"
         if grupper["dps"]:
-            content += "\n**⚔️ DPS**" + "\n".join(grupper["dps"]) + "\n"
+            content += "\n**⚔️ DPS**\n" + "\n".join(grupper["dps"]) + "\n"
         content += "\n\u200b\n\u200b"
 
         besked_id = ldata.get("besked_id")
