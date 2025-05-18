@@ -6,9 +6,13 @@ class Database:
         self.pool = None
 
     async def connect(self):
-        self.pool = await asyncpg.create_pool(dsn=os.getenv("DATABASE_URL"))
-        await self.ensure_primary_key()
-        await self.ensure_lister_key()
+        try:
+            self.pool = await asyncpg.create_pool(dsn=os.getenv("DATABASE_URL"))
+            await self.ensure_primary_key()
+            await self.ensure_lister_key()
+        except Exception as e:
+            print(f"[DB] Fejl ved oprettelse af forbindelse: {e}")
+            raise
 
     async def ensure_primary_key(self):
         async with self.pool.acquire() as conn:

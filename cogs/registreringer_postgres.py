@@ -70,6 +70,7 @@ class ZommozBot(commands.Cog):
 
     @commands.command(name="zinit")
     async def zinit(self, ctx, listename: str, *, titel: str = None):
+        listename = listename.lower()
         tilladt = any(r.name == "Group Organisator" for r in ctx.author.roles)
         if ctx.author.guild_permissions.administrator:
             tilladt = True
@@ -101,6 +102,7 @@ class ZommozBot(commands.Cog):
 
     @commands.command(name="ztilmeld")
     async def ztilmeld(self, ctx, listename: str, rio_link: str):
+        listename = listename.lower()
         guild_id = str(ctx.guild.id)
         user_id = str(ctx.author.id)
 
@@ -169,6 +171,7 @@ class ZommozBot(commands.Cog):
 
     @commands.command(name="zfjern")
     async def zfjern(self, ctx, listename: str, charname: str = None):
+        listename = listename.lower()
         await self.db.fjern_registrering(str(ctx.guild.id), listename, str(ctx.author.id), charname.capitalize() if charname else None)
         await self.opdater_besked(ctx.guild.id, listename)
         besked = f"{ctx.author.mention} fjernede "
@@ -182,6 +185,7 @@ class ZommozBot(commands.Cog):
 
     @commands.command(name="zvis")
     async def zvis(self, ctx, listename: str):
+        listename = listename.lower()
         ldata = await self.db.get_liste(str(ctx.guild.id), listename)
         if not ldata or not ldata.get("besked_id"):
             await ctx.send("Beskeden er ikke oprettet endnu. Brug `!zinit <liste>`.")
@@ -202,6 +206,7 @@ class ZommozBot(commands.Cog):
 
     @commands.command(name="zreset")
     async def zreset(self, ctx, listename: str):
+        listename = listename.lower()
         ldata = await self.db.get_liste(str(ctx.guild.id), listename)
         if not ldata:
             await ctx.send("❌ Listen findes ikke.")
@@ -213,8 +218,12 @@ class ZommozBot(commands.Cog):
         await ctx.send(f"🗑️ Listen **{listename}** er blevet slettet.")
 
     async def opdater_besked(self, guild_id, listename):
+        listename = listename.lower()
         guild_id = str(guild_id)
         ldata = await self.db.get_liste(guild_id, listename)
+        if not ldata:
+            return
+        
         resultater = await self.db.hent_alle(guild_id, listename)
         grupper = {"tank": [], "healer": [], "dps": []}
         for row in resultater:

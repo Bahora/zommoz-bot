@@ -1,25 +1,30 @@
 import discord
 from discord.ext import commands
 import os
-import asyncio
 from database import Database
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(levelname)s] %(asctime)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 intents = discord.Intents.default()
 intents.message_content = True
-
 bot = commands.Bot(command_prefix='!', intents=intents)
-db = Database()  # vi opretter db her én gang
+db = Database()
 
 @bot.event
 async def on_ready():
-    print(f"Logget ind som {bot.user} ({bot.user.id})")
+    logging.info(f"Logget ind som {bot.user} ({bot.user.id})")
     await bot.tree.sync()
 
-async def setup():
-    await db.connect()         # Opret forbindelse til DB én gang
-    bot.db = db                # Gør den tilgængelig i botten
+@bot.event
+async def setup_hook():
+    await db.connect()
+    bot.db = db
     await bot.load_extension("cogs.registreringer_postgres")
 
 if __name__ == "__main__":
-    asyncio.run(setup())
     bot.run(os.getenv("DISCORD_TOKEN"))
