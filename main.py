@@ -14,7 +14,7 @@ async def on_ready():
     await bot.tree.sync()
 
 async def setup():
-    await bot.load_extension("cogs.registreringer")
+    await bot.load_extension("cogs.registreringer_postgres")
 
 if __name__ == "__main__":
     asyncio.run(setup())
